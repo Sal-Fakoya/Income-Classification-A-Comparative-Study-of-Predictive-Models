@@ -3,7 +3,7 @@
 > Can machine learning predict income brackets from demographic data, and does added model complexity actually justify its cost in a regulated business setting?
 > My Break Through Tech AI capstone works through the full ML lifecycle on U.S. census data and closes with a business grounded model recommendation.
 
-🔗 **[View the interactive presentation](https://sal-fakoya.github.io/Capstone-Project/)**. Choose a business or technical audience, switch themes, and download a PDF.
+🔗 **[View the interactive presentation](https://sal-fakoya.github.io/Income-Classification-A-Comparative-Study-of-Predictive-Models/)**. Choose a business or technical audience, switch themes, and download a PDF.
 
 ## Highlights
 
