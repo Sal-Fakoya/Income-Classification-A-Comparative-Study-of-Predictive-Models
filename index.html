@@ -483,23 +483,23 @@
 <section class="slide" id="s8" data-title="Performance Deep Dive">
   <div class="kicker">07 &middot; Interpretation</div>
   <h2>Performance Deep Dive and Feature Influence</h2>
-  <p class="nontech">The model achieves an 84.6% true positive rate for high earners, with a 20.5% false positive rate among lower earners. This trade off is a direct consequence of training on a balanced sample. The most influential predictors align with economic expectations: marital status, capital gains, and executive occupations correlate positively with high income, while certain occupational categories and nationalities show negative coefficients that warrant further fairness review.</p>
+  <p class="nontech">The model achieves an 84.5% true positive rate for high earners, with a 20.4% false positive rate among lower earners. This trade off is a direct consequence of training on a balanced sample. The most influential predictors align with economic expectations: marital status, capital gains, and executive occupations correlate positively with high income, while certain occupational categories and nationalities show negative coefficients that warrant further fairness review.</p>
   <div class="tech">
-    <p>Row normalized confusion matrix and top logistic regression coefficients. Positive class recall is robust (84.6%) at the cost of a 20.5% false positive rate. This trade off can be adjusted via threshold tuning based on a specific business cost function.</p>
+    <p>Row normalized confusion matrix and top logistic regression coefficients. Positive class recall is robust (84.5%) at the cost of a 20.4% false positive rate. This trade off can be adjusted via threshold tuning based on a specific business cost function.</p>
   </div>
   <div class="grid2">
     <div class="card">
       <h3>Classification outcomes <span class="tech">(row %)</span></h3>
       <table class="cm">
         <tr><th></th><th>Predicted &#8804;50K</th><th>Predicted &gt;50K</th></tr>
-        <tr><th>Actual &#8804;50K</th><td class="good">79.5%</td><td class="bad">20.5%</td></tr>
-        <tr><th>Actual &gt;50K</th><td class="bad">15.4%</td><td class="good">84.6%</td></tr>
+        <tr><th>Actual &#8804;50K</th><td class="good">79.6%</td><td class="bad">20.4%</td></tr>
+        <tr><th>Actual &gt;50K</th><td class="bad">15.5%</td><td class="good">84.5%</td></tr>
       </table>
     </div>
     <div class="card">
       <h3>Key predictive drivers</h3>
-      <p class="nontech">Positive coefficients: marital status married civ spouse (+2.21), capital gain (+0.84), occupation exec managerial (+0.79). Negative coefficients: occupation private household service (&#8722;1.60), farming and fishing (&#8722;1.27). Several nationality based coefficients carry large magnitudes but sit on thin support, suggesting instability.</p>
-      <p class="tech">Largest coefficients: marital-status_Married-civ-spouse (+2.21), Married-AF-spouse (+2.03), capital-gain (+0.84), occupation_Exec-managerial (+0.79). Negative: occupation_Priv-house-serv (&#8722;1.60), Farming-fishing (&#8722;1.27). Native country coefficients should be interpreted with caution due to low sample sizes.</p>
+      <p class="nontech">Positive coefficients: marital status married civ spouse (+2.21), capital gain (+0.87), occupation exec managerial (+0.79). Negative coefficients: occupation private household service (&#8722;1.61), farming and fishing (&#8722;1.27). Several nationality based coefficients carry large magnitudes but sit on thin support, suggesting instability.</p>
+      <p class="tech">Largest coefficients: marital-status_Married-civ-spouse (+2.21), Married-AF-spouse (+2.03), capital-gain (+0.87), occupation_Exec-managerial (+0.79). Negative: occupation_Priv-house-serv (&#8722;1.61), Farming-fishing (&#8722;1.27). Native country coefficients should be interpreted with caution due to low sample sizes.</p>
     </div>
   </div>
 </section>
@@ -520,8 +520,8 @@
 <section class="slide" id="s10" data-title="Recommendation">
   <div class="kicker">09 &middot; Recommendation</div>
   <h2>Recommendation and Business Implications</h2>
-  <p class="nontech">The neural network achieved an accuracy of 81.0%, only 0.3 percentage points higher than the logistic regression model's 80.7%. Given the near identical performance and the critical regulatory requirement for explainability in financial services, logistic regression is the recommended production model. This outcome reinforces a fundamental principle: model complexity does not inherently equate to business value.</p>
-  <p class="tech">Neural Network test performance: accuracy 0.810, F1 0.687 vs tuned Logistic Regression at 0.807 / 0.679. The marginal gain (about 0.3 points) does not justify the interpretability loss, tuning overhead, or serving cost in a regulated credit context. Recommendation: deploy logistic regression; revisit deep architectures only if the feature space expands significantly or a specific performance threshold requires it.</p>
+  <p class="nontech">The neural network achieved an accuracy of 81.3%, only 0.6 percentage points higher than the logistic regression model's 80.7%. AUC, which measures how well a model ranks high earners above low earners across every possible decision threshold rather than just one fixed cutoff, came out nearly identical for both models at around 90.5%. That is a meaningful result on its own: it means the two models distinguish between income groups almost equally well, and the small accuracy edge the neural network shows is really about where it happens to draw its decision line, not about understanding the data any better. Given that, and the critical regulatory requirement for explainability in financial services, logistic regression is the recommended production model. This outcome reinforces a fundamental principle: model complexity does not inherently equate to business value.</p>
+  <p class="tech">Neural Network test performance: accuracy 0.813, F1 0.687, AUC 0.906, vs tuned Logistic Regression at 0.807 / 0.679 / 0.905. The AUC gap (about 0.001) is an order of magnitude smaller than the accuracy or F1 gap, indicating the two models achieve almost identical ranking quality across all thresholds; the neural network's marginal edge in accuracy and F1 reflects threshold placement at the 0.5 cutoff rather than a meaningfully different decision boundary. This does not justify the interpretability loss, tuning overhead, or serving cost in a regulated credit context. Recommendation: deploy logistic regression; revisit deep architectures only if the feature space expands significantly or a specific performance threshold requires it.</p>
 
   <div class="chartbox">
     <div class="chart-holder"><canvas id="chartFinal"></canvas></div>
@@ -534,8 +534,8 @@
       <summary>What this means for a business</summary>
       <ul style="list-style-type:disc; padding-left:1.5rem; margin-top:0.8rem;">
         <li>The model is most likely to predict a high income for someone who is married, has capital gains, and works in an executive or managerial role. For a lender, that means these applicants will usually be approved automatically.</li>
-        <li>The model currently flags 20.5% of lower income applicants as high income (false positives). Those people may receive credit they cannot afford. At the same time, it misses 15.4% of true high earners (false negatives), which means lost lending opportunities.</li>
-        <li>Because logistic regression is simple and transparent, you can adjust the decision threshold. Raising the threshold would reduce false positives (fewer risky loans) but increase false negatives (more missed good customers). The right setting depends on the specific cost of defaults versus lost revenue – a business decision, not a technical one.</li>
+        <li>The model currently flags 20.4% of lower income applicants as high income (false positives). Those people may receive credit they cannot afford. At the same time, it misses 15.5% of true high earners (false negatives), which means lost lending opportunities.</li>
+        <li>Because logistic regression is simple and transparent, you can adjust the decision threshold. Raising the threshold would reduce false positives (fewer risky loans) but increase false negatives (more missed good customers). The right setting depends on the specific cost of defaults versus lost revenue.</li>
       </ul>
     </details>
 
@@ -554,8 +554,8 @@
     <details class="card" style="margin-top:1.4rem;">
       <summary>What this means for deployment</summary>
       <ul style="list-style-type:disc; padding-left:1.5rem; margin-top:0.8rem;">
-        <li>The logistic regression coefficients show that <span class="chip">marital status Married civ spouse</span> (+2.21), <span class="chip">capital gain</span> (+0.84), and <span class="chip">occupation Exec managerial</span> (+0.79) are the strongest positive predictors. These translate to the largest increases in log‑odds for the high income class, dominating the model's decision surface.</li>
-        <li>On the test set, the model achieves an 84.6% true positive rate (recall) for high earners, but at the cost of a 20.5% false positive rate among lower income individuals. This means 15.4% of true high earners are missed, while one in five lower income applicants would be incorrectly flagged – a direct consequence of training on a balanced sample.</li>
+        <li>The logistic regression coefficients show that <span class="chip">marital status Married civ spouse</span> (+2.21), <span class="chip">capital gain</span> (+0.87), and <span class="chip">occupation Exec managerial</span> (+0.79) are the strongest positive predictors. These translate to the largest increases in log‑odds for the high income class, dominating the model's decision surface.</li>
+        <li>On the test set, the model achieves an 84.5% true positive rate (recall) for high earners, but at the cost of a 20.4% false positive rate among lower income individuals. This means 15.5% of true high earners are missed, while one in five lower income applicants would be incorrectly flagged – a direct consequence of training on a balanced sample.</li>
         <li>Because logistic regression outputs a well‑calibrated probability, the decision threshold can be shifted along the ROC curve to prioritise either lower false positives or higher recall. This trade‑off is governed by a business cost function (e.g., cost of default vs. cost of missed opportunity). The model's transparency makes this calibration straightforward, unlike black‑box neural networks, where such adjustments are far harder to interpret and justify.</li>
       </ul>
     </details>
@@ -847,8 +847,8 @@ function buildChart(id){
       chart = new Chart(el, { type:'bar', data: { labels:['Accuracy','F1 Score','AUC'],
         datasets:[
           { label:'Logistic Regression', data:[0.807,0.679,0.905], backgroundColor:CHART.blue, hoverBackgroundColor:CHART_HOVER.blue, borderRadius:6 },
-          { label:'Decision Tree', data:[0.767,0.615,0.770], backgroundColor:CHART.amber, hoverBackgroundColor:CHART_HOVER.amber, borderRadius:6 },
-          { label:'KNN', data:[0.786,0.659,0.880], backgroundColor:CHART.green, hoverBackgroundColor:CHART_HOVER.green, borderRadius:6 } ] }, options:o });
+          { label:'Decision Tree', data:[0.771,0.621,0.774], backgroundColor:CHART.amber, hoverBackgroundColor:CHART_HOVER.amber, borderRadius:6 },
+          { label:'KNN', data:[0.785,0.658,0.880], backgroundColor:CHART.green, hoverBackgroundColor:CHART_HOVER.green, borderRadius:6 } ] }, options:o });
     }
     else if (id === 'chartTraining'){
       const o = baseOptions('Neural network learning across 50 epochs');
@@ -863,11 +863,11 @@ function buildChart(id){
       const o = baseOptions('Logistic regression vs neural network');
       o.plugins.valueLabel = { formatter: pctFmt };
       o.plugins.tooltip.callbacks = { label: c => c.dataset.label + ': ' + pctFmt(c.parsed.y) };
-      o.scales = { y: { min:0.5, max:0.93, ticks:{ callback:v=>Math.round(v*100)+'%' } } };
-      chart = new Chart(el, { type:'bar', data: { labels:['Accuracy','F1 Score'],
+      o.scales = { y: { min:0.5, max:0.97, ticks:{ callback:v=>Math.round(v*100)+'%' } } };
+      chart = new Chart(el, { type:'bar', data: { labels:['Accuracy','F1 Score','AUC'],
         datasets:[
-          { label:'Logistic Regression (tuned)', data:[0.8075,0.6790], backgroundColor:CHART.blue, hoverBackgroundColor:CHART_HOVER.blue, borderRadius:6 },
-          { label:'Neural Network', data:[0.8096,0.6866], backgroundColor:CHART.green, hoverBackgroundColor:CHART_HOVER.green, borderRadius:6 } ] }, options:o });
+          { label:'Logistic Regression (tuned)', data:[0.807,0.679,0.905], backgroundColor:CHART.blue, hoverBackgroundColor:CHART_HOVER.blue, borderRadius:6 },
+          { label:'Neural Network', data:[0.813,0.687,0.906], backgroundColor:CHART.green, hoverBackgroundColor:CHART_HOVER.green, borderRadius:6 } ] }, options:o });
     }
   } catch(e){ console.warn('Failed to build chart:', id, e); return; }
   if (!chart) return;
