@@ -45,10 +45,12 @@ Three algorithms competed on identical data:
 | Model | Accuracy | F1 Score | AUC |
 |---|---|---|---|
 | **Logistic Regression** | **0.807** | **0.679** | **0.905** |
-| KNN | 0.786 | 0.659 | 0.880 |
-| Decision Tree | 0.767 | 0.615 | 0.770 |
+| KNN | 0.785 | 0.658 | 0.880 |
+| Decision Tree | 0.771 | 0.621 | 0.774 |
 
 Logistic Regression led across every metric, and the ranking held when I reran the comparison at 20, 30, and 40 percent test splits. GridSearchCV across regularization strength and penalty type (C in 0.01 to 100, l1/l2, liblinear solver) landed on C=1 with l2, essentially the defaults, at a cross validated AUC of 0.904.
+
+The Decision Tree was left unpruned (default `max_depth`), so its clear underperformance likely reflects overfitting on its part rather than a purely algorithmic gap between linear and tree based models.
 
 ### Performance deep dive and feature influence
 
@@ -56,12 +58,12 @@ The row normalized confusion matrix shows the trade off created by the balanced 
 
 | | Predicted ≤50K | Predicted >50K |
 |---|---|---|
-| **Actual ≤50K** | 79.5% | 20.5% |
-| **Actual >50K** | 15.4% | 84.6% |
+| **Actual ≤50K** | 79.6% | 20.4% |
+| **Actual >50K** | 15.5% | 84.5% |
 
-Recall on high earners is strong at 84.6 percent, at the cost of a 20.5 percent false positive rate. That balance can be adjusted through threshold tuning against a specific business cost function.
+Recall on high earners is strong at 84.5 percent, at the cost of a 20.4 percent false positive rate. That balance can be adjusted through threshold tuning against a specific business cost function.
 
-The largest coefficients align with economic intuition: marital status married civ spouse (+2.21), capital gain (+0.84), and executive or managerial occupation (+0.79) push predictions up, while private household service (−1.60) and farming or fishing (−1.27) push them down. Several native country coefficients carry large magnitudes but rest on very few observations, so I treat them as unstable and as a reminder of the representation issue noted above.
+The largest coefficients align with economic intuition: marital status married civ spouse (+2.21), capital gain (+0.87), and executive or managerial occupation (+0.79) push predictions up, while private household service (−1.61) and farming or fishing (−1.27) push them down. Several native country coefficients carry large magnitudes but rest on very few observations, so I treat them as unstable and as a reminder of the representation issue noted above.
 
 ## Advanced modeling: neural network exploration
 
@@ -71,10 +73,13 @@ Built with Keras: input (77 features) to Dense(32, ReLU) to Dense(16, ReLU) to D
 
 | Metric | Logistic Regression (tuned) | Neural Network |
 |---|---|---|
-| Accuracy | 0.807 | 0.810 |
+| Accuracy | 0.807 | 0.813 |
 | F1 Score | 0.679 | 0.687 |
+| AUC | 0.905 | 0.906 |
 
-The neural network edged out logistic regression by roughly 0.3 percentage points, based on a single run, while the logistic regression results were shown stable across three splits. Given the near identical performance and the regulatory requirement for explainability in financial services, logistic regression is the recommended production model. Revisit deep architectures only if the feature space expands significantly or a specific performance threshold requires it. The broader takeaway: model complexity does not inherently equate to business value.
+The neural network edged out logistic regression by roughly 0.6 percentage points in accuracy, based on a single run, while the logistic regression results were shown stable across three splits. AUC tells a tighter story: it measures how well a model ranks high earners above low earners across every possible decision threshold rather than just the one fixed cutoff accuracy and F1 depend on, and here it lands within 0.001 for both models. That gap is an order of magnitude smaller than the accuracy or F1 gap, meaning the two models discriminate between income groups almost equally well; the neural network's edge is mostly about where it happens to draw its decision line, not a genuinely better read of the data. Given that, and the regulatory requirement for explainability in financial services, logistic regression is the recommended production model. Revisit deep architectures only if the feature space expands significantly or a specific performance threshold requires it. The broader takeaway: model complexity does not inherently equate to business value.
+
+This also functions as an informal check against memorization: the cross validated AUC used to pick the logistic regression's hyperparameters (0.904) and its held out test AUC (0.905) land within 0.001 of each other. If the model had simply memorized the training data, those two numbers would typically pull apart rather than agree this closely.
 
 ## Key learnings and future directions
 
